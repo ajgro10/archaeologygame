@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Archaeology Discovery Challenge</title>
+<style>
+:root{--ink:#2f2a24;--muted:#6f6559;--sand:#f5ead4;--paper:#fffdf7;--clay:#a85f3d;--gold:#d6a33a;--green:#55735b;--line:#d8c8ad}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#efe5d4;color:var(--ink)}
+.wrap{max-width:1000px;margin:auto;padding:24px}
+header{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:24px;text-align:center}
+h1{margin:0;font-size:clamp(28px,5vw,48px)} h2{margin:8px 0} p{line-height:1.5}
+.tag{display:inline-block;background:var(--sand);border-radius:999px;padding:7px 12px;font-weight:700;margin-bottom:10px}
+.card{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:20px;margin-top:18px}
+button,input,textarea{font:inherit}
+button{cursor:pointer;border:0;border-radius:12px;padding:13px 16px;font-weight:700}
+.primary{background:var(--clay);color:white}.secondary{background:var(--sand);color:var(--ink);border:1px solid var(--line)}
+input,textarea{width:100%;padding:13px;border:2px solid var(--line);border-radius:12px;background:white}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.square{min-height:105px;background:#cba977;border:3px solid #a88759;color:#342819;font-size:15px}
+.square.dug{background:#eadcc5;border-color:var(--line)}
+.square .icon{font-size:34px;display:block;margin-bottom:5px}
+.progress{height:14px;background:#e5d8c2;border-radius:999px;overflow:hidden}.bar{height:100%;width:0;background:var(--green);transition:.25s}
+.flex{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.choice{display:block;width:100%;text-align:left;margin:8px 0;background:white;border:2px solid var(--line);color:var(--ink)}
+.choice:hover{background:var(--sand)}
+.good{background:#e7f0e7;border:2px solid #8eae91;padding:13px;border-radius:12px}
+.try{background:#f7ead9;border:2px solid #d2a16f;padding:13px;border-radius:12px}
+.hidden{display:none!important}
+.artifact{font-size:64px;text-align:center}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+footer{text-align:center;color:var(--muted);padding:24px 5px;font-size:13px}
+@media(max-width:650px){.grid{grid-template-columns:repeat(3,1fr)}.notes{grid-template-columns:1fr}.wrap{padding:12px}.square{min-height:90px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="tag">🏺 5th Grade Archaeology</div>
+<h1>Archaeology Discovery Challenge</h1>
+<p>Dig carefully. Examine the evidence. Discover how people of the past may have lived.</p>
+</header>
+
+<section id="start" class="card">
+<h2>Welcome, Archaeologist!</h2>
+<p>A mysterious settlement has been discovered. Your job is to excavate the site and use artifacts as evidence. Remember: archaeologists make <b>inferences</b>, but they do not make unsupported guesses.</p>
+<label for="student"><b>Archaeologist's Name</b></label>
+<input id="student" maxlength="40" placeholder="Type your name">
+<p><button id="startBtn" class="primary">⛏️ Start Expedition</button></p>
+</section>
+
+<main id="game" class="hidden">
+<section class="card">
+<div class="flex"><div><b id="welcome"></b><div id="rank">Rank: Archaeology Apprentice</div></div><div><b id="count">0 / 6 artifacts</b></div></div>
+<div class="progress" style="margin-top:12px"><div id="bar" class="bar"></div></div>
+</section>
+
+<section class="card">
+<h2>🗺️ Excavation Site</h2>
+<p>Choose a square to excavate. Some contain artifacts; others contain only soil. Empty spaces are evidence too!</p>
+<div id="digGrid" class="grid"></div>
+<p id="siteMessage"><b>Field note:</b> Select a square to begin digging.</p>
+</section>
+
+<section id="lab" class="card hidden">
+<h2>🔎 Artifact Lab</h2>
+<div class="artifact" id="artIcon"></div>
+<h2 id="artName"></h2>
+<p id="artDesc"></p>
+<h3>What might this artifact tell us?</h3>
+<div id="choices"></div>
+<div id="feedback"></div>
+</section>
+
+<section class="card">
+<h2>📝 Archaeologist's Field Notes</h2>
+<div class="notes">
+<div><label for="obs"><b>Observation</b> — What did you actually see?</label><textarea id="obs" rows="4" placeholder="I observed..."></textarea></div>
+<div><label for="inf"><b>Inference</b> — What might the evidence mean?</label><textarea id="inf" rows="4" placeholder="I infer that..."></textarea></div>
+</div>
+</section>
+
+<section id="final" class="card hidden">
+<h2>🏆 Final Challenge</h2>
+<p>You uncovered all six artifacts. Which conclusion is <b>best supported by the evidence</b>?</p>
+<div id="finalChoices"></div>
+<div id="finalFeedback"></div>
+</section>
+</main>
+<footer>Think like an archaeologist: Observe → Question → Infer → Support with Evidence</footer>
+</div>
+
+<script>
+const artifacts={
+1:{icon:"🏺",name:"Decorated Clay Pot",desc:"Fragments of a clay pot are covered with painted geometric designs. Dark residue remains inside.",choices:["The people made and stored food in pottery.","The people used computers.","The people lived on ships."],answer:0,why:"Clay containers could be used for cooking or storing food. The decoration also suggests that people valued art or design."},
+3:{icon:"🪨",name:"Stone Arrow Point",desc:"A carefully sharpened stone point is found near animal bones.",choices:["The community likely hunted animals.","The community only ate plants.","The point was a musical instrument."],answer:0,why:"A sharpened projectile point near animal remains is evidence that hunting may have helped provide food."},
+5:{icon:"🌽",name:"Charred Corn Kernels",desc:"Tiny burned corn kernels are found near the remains of a fire pit.",choices:["The people practiced some farming or used cultivated crops.","They had a modern grocery store.","They never cooked food."],answer:0,why:"Preserved corn is evidence that cultivated plants were part of the community's food supply."},
+7:{icon:"🐚",name:"Shell Beads",desc:"Small shells have holes drilled through them. The nearest ocean is very far from the settlement.",choices:["The people may have traded with distant groups.","The settlement was definitely underwater.","The shells grew in the soil."],answer:0,why:"Shells from a distant environment suggest travel or trade between communities."},
+9:{icon:"🪡",name:"Bone Needle",desc:"A thin piece of polished bone has a tiny hole at one end.",choices:["People may have sewn clothing, hides, or other materials.","People used it to build stone houses.","It proves they could read."],answer:0,why:"The shape resembles a sewing tool and could have been used to stitch hides, cloth, or other materials."},
+11:{icon:"🔥",name:"Stone-Lined Fire Pit",desc:"A circle of fire-darkened stones contains charcoal and bits of animal bone.",choices:["People used fire for cooking, warmth, or gathering.","People had electric ovens.","The stones were used as money."],answer:0,why:"Charcoal and burned remains are strong evidence that fire was intentionally used at this location."}
+};
+let dug=new Set(),found=new Set();
+const $=id=>document.getElementById(id);
+function render(){
+ $("digGrid").innerHTML="";
+ for(let i=0;i<12;i++){
+  const b=document.createElement("button");b.className="square"+(dug.has(i)?" dug":"");
+  if(dug.has(i)){b.disabled=true;b.innerHTML=artifacts[i]?`<span class="icon">${artifacts[i].icon}</span>Artifact!`:`<span class="icon">🟫</span>Soil`}
+  else b.innerHTML=`<span class="icon">⛏️</span>Square ${i+1}`;
+  b.onclick=()=>dig(i);$("digGrid").appendChild(b);
+ }
+ $("count").textContent=`${found.size} / 6 artifacts`;
+ $("bar").style.width=(found.size/6*100)+"%";
+ $("rank").textContent="Rank: "+(found.size<2?"Archaeology Apprentice":found.size<4?"Artifact Investigator":found.size<6?"Evidence Expert":"Lead Archaeologist");
+ if(found.size===6)$("final").classList.remove("hidden");
+}
+function dig(i){
+ dug.add(i);
+ if(artifacts[i]){found.add(i);$("siteMessage").innerHTML=`<b>Discovery!</b> You uncovered ${artifacts[i].name}. Examine it in the Artifact Lab.`;showArtifact(i)}
+ else{$("siteMessage").innerHTML="<b>No artifact here.</b> You found a layer of soil. Archaeologists record empty areas too!";$("lab").classList.add("hidden")}
+ render();
+}
+function showArtifact(i){
+ const a=artifacts[i];$("lab").classList.remove("hidden");$("artIcon").textContent=a.icon;$("artName").textContent=a.name;$("artDesc").textContent=a.desc;$("feedback").innerHTML="";$("choices").innerHTML="";
+ a.choices.forEach((c,j)=>{const b=document.createElement("button");b.className="choice";b.textContent=c;b.onclick=()=>{$("feedback").className=j===a.answer?"good":"try";$("feedback").innerHTML=j===a.answer?`<b>✓ Strong archaeological thinking!</b><br>${a.why}`:"<b>Try again.</b> Which answer can you support using only the evidence that was discovered?"};$("choices").appendChild(b)});
+ $("lab").scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("startBtn").onclick=()=>{
+ const n=$("student").value.trim(); if(!n){$("student").focus();return}
+ $("start").classList.add("hidden");$("game").classList.remove("hidden");$("welcome").textContent="Lead Archaeologist: "+n;render();
+};
+[
+["The people hunted, used crops, cooked food, made useful and decorative objects, and may have traded with other communities.",true],
+["The people definitely lived in skyscrapers and drove cars.",false],
+["The people survived only by hunting and never interacted with other groups.",false]
+].forEach(([t,ok])=>{const b=document.createElement("button");b.className="choice";b.textContent=t;b.onclick=()=>{$("finalFeedback").className=ok?"good":"try";$("finalFeedback").innerHTML=ok?`<h2>🎉 Expedition Complete!</h2><p><b>Excellent evidence-based conclusion!</b> You combined several discoveries without claiming more than the artifacts can prove.</p><p>Archaeologists use objects left behind to learn about how people ate, worked, created, traveled, and interacted.</p>`:"<b>Not quite.</b> Ask yourself: Can every part of that conclusion be supported by something you actually uncovered?"};$("finalChoices").appendChild(b)});
+</script>
+</body>
+</html>
